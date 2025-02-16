@@ -1,0 +1,8 @@
+# This file is used internally by FFMPEG.
+file 'file:D:/EVE/media/videos/1080p60/partial_movie_files/EquationSolving/uncached_00000.mp4'
+file 'file:D:/EVE/media/videos/1080p60/partial_movie_files/EquationSolving/uncached_00001.mp4'
+file 'file:D:/EVE/media/videos/1080p60/partial_movie_files/EquationSolving/uncached_00002.mp4'
+file 'file:D:/EVE/media/videos/1080p60/partial_movie_files/EquationSolving/uncached_00003.mp4'
+file 'file:D:/EVE/media/videos/1080p60/partial_movie_files/EquationSolving/uncached_00004.mp4'
+file 'file:D:/EVE/media/videos/1080p60/partial_movie_files/EquationSolving/uncached_00005.mp4'
+file 'file:D:/EVE/media/videos/1080p60/partial_movie_files/EquationSolving/uncached_00006.mp4'

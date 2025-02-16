@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spire - AI Assistant</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loader" class="loader-container">
+        <div class="loader">
+            <div class="loading">
+                <svg height="48px" width="64px">
+                    <polyline id="back" points="0.157 23.954, 14 23.954, 21.843 48, 43 0, 50 24, 64 24"></polyline>
+                    <polyline id="front" points="0.157 23.954, 14 23.954, 21.843 48, 43 0, 50 24, 64 24"></polyline>
+                </svg>
+            </div>
+            <div class="loader-text">Loading Spire...</div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav>
+        <div class="logo">Spire</div>
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+            <svg class="sun-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 17C14.7614 17 17 14.7614 17 12C17 9.23858 14.7614 7 12 7C9.23858 7 7 9.23858 7 12C7 14.7614 9.23858 17 12 17Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M12 1V3M12 21V23M4.22 4.22L5.64 5.64M18.36 18.36L19.78 19.78M1 12H3M21 12H23M4.22 19.78L5.64 18.36M18.36 5.64L19.78 4.22" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <svg class="moon-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </button>
+    </nav>
+
+    <!-- Main Content -->
+    <main>
+        <div class="chat-container">
+            <!-- Chat Messages Area -->
+            <div class="chat-messages">
+                <div class="welcome-message">
+                    <h2>Welcome to Spire</h2>
+                    <p>How can I help you today?</p>
+                </div>
+            </div>
+
+            <!-- Chat Input Area -->
+            <div class="chat-input-container">
+                <div class="chat-input-wrapper">
+                    <textarea
+                        class="chat-input"
+                        placeholder="Message Spire..."
+                        rows="1"
+                    ></textarea>
+                    <button class="send-button">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M22 2L11 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Wait for the page to load, then fade out the loader
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                document.getElementById('loader').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('loader').style.display = 'none';
+                }, 800);  // Smooth fade-out animation
+            }, 2500);    // Show loader for 2.5 seconds
+        });
+
+        // Handle sending messages
+        async function sendMessage() {
+            const input = document.querySelector('.chat-input');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            // Clear input and show user's message
+            input.value = '';
+            addMessage(message, 'user');
+
+            try {
+                // Show "Thinking..." message
+                const loadingId = Date.now();
+                addMessage("Thinking...", 'eve', loadingId);
+
+                // Send to server
+                const response = await fetch('http://127.0.0.1:5000/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        message: message,
+                        video: message.toLowerCase().includes('solve')
+                    })
+                });
+
+                // Remove "Thinking..." message
+                removeMessage(loadingId);
+
+                const data = await response.json();
+                if (data.success) {
+                    // Show Eve's response
+                    addMessage(data.message, 'eve');
+
+                    // Handle video if present
+                    if (data.video) {
+                        addVideo(data.video);
+                    }
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                addMessage("Sorry, I'm having trouble connecting to the server.", 'eve');
+            }
+        }
+
+        // Add a message to the chat
+        function addMessage(text, sender, messageId = null) {
+            const messagesContainer = document.querySelector('.chat-messages');
+            const messageElement = document.createElement('div');
+            messageElement.className = `message ${sender}`;
+            if (messageId) messageElement.dataset.id = messageId;
+
+            messageElement.innerHTML = `
+                <div class="message-content">${text}</div>
+            `;
+
+            messagesContainer.appendChild(messageElement);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        // Add a video to the chat
+        function addVideo(videoUrl) {
+            const messagesContainer = document.querySelector('.chat-messages');
+            const videoContainer = document.createElement('div');
+            videoContainer.className = 'message eve';
+            videoContainer.innerHTML = `
+                <div class="video-content">
+                    <video src="http://127.0.0.1:5000/video/${videoUrl}" 
+                           controls 
+                           preload="auto" 
+                           playsinline></video>
+                </div>
+            `;
+            messagesContainer.appendChild(videoContainer);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        // Remove a message (used for loading messages)
+        function removeMessage(messageId) {
+            const message = document.querySelector(`.message[data-id="${messageId}"]`);
+            if (message) message.remove();
+        }
+
+        // Handle dark/light theme
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            updateThemeIcon(savedTheme);
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeIcon(newTheme);
+        }
+
+        function updateThemeIcon(theme) {
+            document.querySelector('.sun-icon').style.display = theme === 'light' ? 'block' : 'none';
+            document.querySelector('.moon-icon').style.display = theme === 'light' ? 'none' : 'block';
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            initTheme();
+            
+            // Add event listeners
+            document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+            
+            document.querySelector('.chat-input').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+
+            document.querySelector('.send-button').addEventListener('click', sendMessage);
+        });
+    </script>
+</body>
+</html>
