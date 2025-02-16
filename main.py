@@ -51,10 +51,8 @@ setup_manim_directories()
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-
 load_dotenv()
 google_api_key = os.getenv("GOOGLE_API_KEY")
-
 
 class EquationSolving(Scene):
     def __init__(self, equations, title_text, **kwargs):
