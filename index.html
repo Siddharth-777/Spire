@@ -37,6 +37,7 @@
                     <button class="dropdown-item" onclick="switchTab('code-editor')">Code Editor</button>
                 </div>
             </div>
+            <button class="nav-btn" data-tab="problems">Problems</button>
             <button class="nav-btn" data-tab="about">About</button>
         </div>
         <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
@@ -167,6 +168,76 @@
             </div>
         </div>
 
+        <!-- Problems Tab Content -->
+        <div class="tab-content" id="problems">
+            <div class="problems-container">
+                <!-- Problems List View -->
+                <div class="problems-list-view" id="problemsListView">
+                    <div class="problems-header">
+                        <div class="problems-header-content">
+                            <h2>Practice Problems</h2>
+                            <button class="gen-code-btn" onclick="showGenerateModal()">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <path d="M12 5v14M5 12h14" stroke-width="2" stroke-linecap="round"/>
+                                </svg>
+                                Gen-code
+                            </button>
+                        </div>
+                    </div>
+                    <div class="problems-table">
+                        <div class="table-header">
+                            <div class="col-number">#</div>
+                            <div class="col-title">
+                                Problems
+                                <span class="status-header">Status</span>
+                            </div>
+                        </div>
+                        <div class="table-body" id="problemsList">
+                            <!-- Problems will be loaded here dynamically -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Problem Workspace View -->
+                <div class="problem-workspace" id="problemWorkspace" style="display: none;">
+                    <div class="workspace-header">
+                        <button class="back-btn" onclick="showProblemsList()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            Problems
+                        </button>
+                        <h2 id="problemTitle">1. Two Sum</h2>
+                    </div>
+                    <div class="workspace-content">
+                        <div class="problem-description">
+                            <div id="problemDesc"></div>
+                            <div id="problemExample" class="example-section"></div>
+                        </div>
+                        <div class="code-editor-section">
+                            <div class="editor-header">
+                                <select id="problemLanguageSelect">
+                                    <option value="python">Python</option>
+                                </select>
+                                <button class="run-btn" onclick="runProblemCode()">Run</button>
+                                <button class="submit-btn" onclick="submitProblemCode()">Submit</button>
+                            </div>
+                            <div class="editor-content">
+                                <div class="line-numbers" id="problemLineNumbers"></div>
+                                <textarea id="problemCodeEditor" spellcheck="false"
+                                    onscroll="syncProblemScroll()"
+                                    oninput="updateProblemLineNumbers()"
+                                    placeholder="Write your code here..."></textarea>
+                            </div>
+                            <div class="output-panel" id="problemOutputPanel">
+                                <!-- Code output will appear here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- About Tab Content -->
         <div class="tab-content" id="about">
             <div class="about-container">
@@ -241,62 +312,65 @@
     </div>
 
     <script>
-        // Wait for the page to fully load, then fade out the loader
         window.addEventListener('load', function() {
             setTimeout(() => {
                 document.getElementById('loader').style.opacity = '0';
                 setTimeout(() => {
                     document.getElementById('loader').style.display = 'none';
-                }, 800);  // Smooth fade-out animation
-            }, 2500);    // Show loader for 2.5 seconds
+                }, 800);  // Increased fade-out duration
+            }, 2500);    // Increased initial loading time
         });
 
         const navBtns = document.querySelectorAll('.nav-btn');
         const tabContents = document.querySelectorAll('.tab-content');
 
-        // Handle switching between different tabs (Home, Workspace, About)
         navBtns.forEach(btn => {
             btn.addEventListener('click', () => {
-                // Reset all tabs to inactive state
+                // Remove active class from all buttons and contents
                 navBtns.forEach(b => b.classList.remove('active'));
                 tabContents.forEach(content => content.classList.remove('active'));
 
-                // Activate the clicked tab
+                // Add active class to clicked button and corresponding content
                 btn.classList.add('active');
                 const tabId = btn.getAttribute('data-tab');
                 const targetContent = document.getElementById(tabId);
                 targetContent.classList.add('active');
 
-                // Special handling for workspace view
+                // Handle workspace view
                 if (tabId === 'workspace') {
-                    document.body.style.overflow = 'hidden'; // Lock scrolling in workspace
-                    targetContent.style.paddingTop = '0'; // Remove spacing for workspace
+                    document.body.style.overflow = 'hidden'; // Prevent scrolling
+                    targetContent.style.paddingTop = '0'; // Remove top padding
                 } else {
-                    document.body.style.overflow = ''; // Allow scrolling in other tabs
-                    targetContent.style.paddingTop = '80px'; // Add spacing for nav bar
+                    document.body.style.overflow = '';
+                    targetContent.style.paddingTop = '80px';
                 }
             });
         });
 
-        // Store all chat histories and track which chat is currently active
-        let chats = {}; // Each chat will have its own message history
-        let currentChat = null; // Keep track of which chat we're viewing
-        let isUserSignedIn = false; // Track user's login status
+        // Add this function for returning home
+        function returnToHome() {
+            // Find and click the home button
+            const homeBtn = document.querySelector('.nav-btn[data-tab="home"]');
+            homeBtn.click();
 
-        // Create a new chat conversation
+            // Reset workspace state
+            document.body.style.overflow = '';
+            const workspace = document.getElementById('workspace');
+            workspace.style.paddingTop = '80px';
+        }
+
         function createNewChat() {
-            // Get any message that was typed before creating chat
             const input = document.querySelector('.chat-input');
             const initialMessage = input.value.trim();
 
-            // Show the "Name your chat" popup
+            // Show modal
             const modal = document.getElementById('newChatModal');
             modal.style.display = 'flex';
             const chatNameInput = document.getElementById('chatNameInput');
-            chatNameInput.value = ''; // Clear any previous name
+            chatNameInput.value = ''; // Clear any previous value
             chatNameInput.focus();
 
-            // Save the initial message to use after chat creation
+            // Store the initial message
             if (initialMessage) {
                 modal.setAttribute('data-initial-message', initialMessage);
             } else {
@@ -365,6 +439,10 @@
                 }
             }
         }
+
+        let chats = {}; // Store chat histories
+        let currentChat = null; // Track current active chat
+        let isUserSignedIn = false; // This should be updated based on your authentication logic
 
         function addNewChat(name) {
             const chatHistory = document.querySelector('.chat-history');
@@ -509,7 +587,6 @@
             }
         });
 
-        // Handle sending messages in the chat
         async function sendMessage(messageText = null) {
             const input = document.querySelector('.chat-input');
             const message = messageText || input.value.trim();
@@ -518,16 +595,15 @@
 
             try {
                 if (!messageText) {
-                    // Clear input field and show user's message
+                    // Only clear input if it wasn't passed as a parameter
                     input.value = '';
                     addMessage(message, 'user');
                 }
 
-                // Show "Thinking..." while waiting for response
+                // Show loading state
                 const loadingId = Date.now();
                 addMessage("Thinking...", 'eve', loadingId);
 
-                // Send message to the server
                 const response = await fetch('http://127.0.0.1:5000/chat', {
                     method: 'POST',
                     headers: {
@@ -535,11 +611,11 @@
                     },
                     body: JSON.stringify({
                         message: message,
-                        video: message.toLowerCase().includes('solve') // Check if we need a video response
+                        video: message.toLowerCase().includes('solve')
                     })
                 });
 
-                // Remove the "Thinking..." message
+                // Remove loading message
                 removeMessage(loadingId);
 
                 if (!response.ok) {
@@ -549,10 +625,10 @@
                 const data = await response.json();
 
                 if (data.success) {
-                    // Show Eve's response
+                    // Add EVE's response
                     addMessage(data.message, 'eve');
 
-                    // If there's a video, show it
+                    // Handle video if present
                     if (data.video) {
                         const videoContainer = document.createElement('div');
                         videoContainer.className = 'message eve';
@@ -568,7 +644,7 @@
                         const messagesContainer = document.querySelector('.messages-container');
                         if (messagesContainer) {
                             messagesContainer.appendChild(videoContainer);
-                            // Make sure newest messages are visible
+                            // Scroll to bottom
                             const chatMessages = document.querySelector('.chat-messages');
                             if (chatMessages) {
                                 chatMessages.scrollTop = chatMessages.scrollHeight;
@@ -669,7 +745,6 @@
             updateAuthButtons();
         });
 
-        // Run code in the code editor
         async function runCode() {
             const codeEditor = document.getElementById('codeEditor');
             const outputPanel = document.getElementById('outputPanel');
@@ -681,7 +756,6 @@
             outputPanel.classList.add('loading');
 
             try {
-                // Send code to server for execution
                 const response = await fetch('http://127.0.0.1:5000/execute', {
                     method: 'POST',
                     headers: {
@@ -693,7 +767,6 @@
                 const data = await response.json();
                 outputPanel.classList.remove('loading');
 
-                // Show the results
                 if (data.success) {
                     outputPanel.textContent = data.output || 'Code executed successfully with no output';
                 } else {
@@ -707,15 +780,13 @@
             }
         }
 
-        // Handle dark/light theme
+        // Theme toggle functionality
         function initTheme() {
-            // Load saved theme preference or default to light
             const savedTheme = localStorage.getItem('theme') || 'light';
             document.documentElement.setAttribute('data-theme', savedTheme);
             updateThemeIcon(savedTheme);
         }
 
-        // Switch between dark and light themes
         function toggleTheme() {
             const currentTheme = document.documentElement.getAttribute('data-theme');
             const newTheme = currentTheme === 'light' ? 'dark' : 'light';
@@ -765,21 +836,286 @@
             }
         }
 
-        // Update the initialization to remove problems-related code
+        document.querySelector('[data-tab="problems"]').addEventListener('click', () => {
+            loadProblems();
+        });
+
+        async function loadProblems() {
+            try {
+                const response = await fetch('http://127.0.0.1:5000/problems');
+                const data = await response.json();
+
+                if (!response.ok) {
+                    console.error('Error loading problems:', data.error);
+                    return;
+                }
+
+                const problemsList = document.getElementById('problemsList');
+                problemsList.innerHTML = data.map((problem, index) => `
+                    <div class="problem-row" onclick="showProblem('${problem.title}')">
+                        <div class="col-number">${index + 1}</div>
+                        <div class="col-title">
+                            ${problem.title}
+                            <span class="status ${problem.status === 'solved' ? 'solved' : ''}">
+                                ${problem.status === 'solved' ? 'Solved' : 'Unsolved'}
+                            </span>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading problems:', error);
+            }
+        }
+
+        async function showProblem(title) {
+            try {
+                const response = await fetch(`http://127.0.0.1:5000/problem/${encodeURIComponent(title)}`);
+                const problem = await response.json();
+
+                if (response.ok) {
+                    document.getElementById('problemsListView').style.display = 'none';
+                    document.getElementById('problemWorkspace').style.display = 'block';
+
+                    document.getElementById('problemTitle').textContent = title;
+                    document.getElementById('problemDesc').innerHTML = `
+                        <h3>Problem Description</h3>
+                        ${problem.description.split('\n').map(line => `<p>${line}</p>`).join('')}
+                    `;
+
+                    // Format the example text with styled keywords
+                    const formattedExample = problem.example.split('\n').map(line => {
+                        if (line.startsWith('Input:')) {
+                            return `<span class="keyword">Input:</span> ${line.substring(6)}`;
+                        } else if (line.startsWith('Output:')) {
+                            return `<span class="keyword">Output:</span> ${line.substring(7)}`;
+                        } else if (line.startsWith('Explanation:')) {
+                            return `<span class="explanation">Explanation: ${line.substring(12)}</span>`;
+                        }
+                        return line;
+                    }).join('\n');
+
+                    document.getElementById('problemExample').innerHTML = `
+                        <h3>Examples</h3>
+                        <pre>${formattedExample}</pre>
+                    `;
+
+                    document.getElementById('problemCodeEditor').value = problem.template;
+                    updateProblemLineNumbers();
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        function updateProblemLineNumbers() {
+            const editor = document.getElementById('problemCodeEditor');
+            const lineNumbers = document.getElementById('problemLineNumbers');
+            const lines = editor.value.split('\n');
+
+            // Create line numbers with consistent width
+            const lineCount = lines.length;
+            const width = lineCount.toString().length;
+            lineNumbers.innerHTML = lines.map((_, i) => {
+                const num = (i + 1).toString().padStart(width, ' ');
+                return `<div>${num}</div>`;
+            }).join('');
+
+            // Sync scroll position
+            lineNumbers.scrollTop = editor.scrollTop;
+        }
+
+        function syncProblemScroll() {
+            const editor = document.getElementById('problemCodeEditor');
+            const lineNumbers = document.getElementById('problemLineNumbers');
+            lineNumbers.scrollTop = editor.scrollTop;
+        }
+
+        // Add event listener for editor input
+        document.getElementById('problemCodeEditor')?.addEventListener('input', () => {
+            updateProblemLineNumbers();
+        });
+
+        // Add this function to handle the back button
+        function showProblemsList() {
+            document.getElementById('problemsListView').style.display = 'block';
+            document.getElementById('problemWorkspace').style.display = 'none';
+        }
+
+        // Add these functions for the problem code editor
+        async function runProblemCode() {
+            const code = document.getElementById('problemCodeEditor').value;
+            const outputPanel = document.getElementById('problemOutputPanel');
+
+            // Show loading state
+            outputPanel.textContent = 'Running...';
+
+            try {
+                const response = await fetch('http://127.0.0.1:5000/execute', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ code })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    outputPanel.textContent = data.output || 'Code executed successfully with no output';
+                } else {
+                    outputPanel.textContent = 'Error:\n' + data.error;
+                }
+            } catch (error) {
+                outputPanel.textContent = 'Error connecting to server: ' + error.message;
+            }
+        }
+
+        // Update the output panel styles
+        function updateOutputPanel(content, isError = false) {
+            const outputPanel = document.getElementById('problemOutputPanel');
+            outputPanel.textContent = content;
+            outputPanel.style.color = isError ? '#EF4444' : 'var(--text-color)';
+        }
+
+        // Add function to toggle problem status
+        function toggleProblemStatus(event, title) {
+            event.stopPropagation();  // Prevent problem from opening
+            const statusIcon = event.target;
+            statusIcon.classList.toggle('solved');
+            // Here you could add API call to update status in backend
+        }
+
+        // Add proper initialization
         document.addEventListener('DOMContentLoaded', function() {
-            // Remove this line
+            // Initialize theme
+            initTheme();
+
+            // Add event listeners
+            const chatInput = document.querySelector('.chat-input');
+            const sendButton = document.querySelector('.send-button');
+            
+            if (chatInput) {
+                chatInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        const message = this.value.trim();
+                        if (message) {
+                            if (!currentChat) {
+                                // Show modal with the message
+                                createNewChat();
+                            } else {
+                                sendMessage();
+                            }
+                        }
+                    }
+                });
+            }
+
+            if (sendButton) {
+                sendButton.addEventListener('click', function() {
+                    const input = document.querySelector('.chat-input');
+                    const message = input.value.trim();
+                    if (message) {
+                        if (!currentChat) {
+                            // Show modal with the message
+                            createNewChat();
+                        } else {
+                            sendMessage();
+                        }
+                    }
+                });
+            }
+
+            // Initialize theme toggle
+            const themeToggle = document.getElementById('themeToggle');
+            if (themeToggle) {
+                themeToggle.addEventListener('click', toggleTheme);
+            }
+
+            // Initialize problems tab
             const problemsTab = document.querySelector('[data-tab="problems"]');
             if (problemsTab) {
                 problemsTab.addEventListener('click', loadProblems);
             }
 
-            // Remove these lines
+            // Initialize code editor
             const problemCodeEditor = document.getElementById('problemCodeEditor');
             if (problemCodeEditor) {
                 problemCodeEditor.addEventListener('input', updateProblemLineNumbers);
                 problemCodeEditor.addEventListener('scroll', syncProblemScroll);
             }
+
+            // Initialize auth state
+            updateAuthButtons();
         });
+
+        function showGenerateModal() {
+            const modal = document.getElementById('generateProblemModal');
+            modal.style.display = 'flex';
+            document.getElementById('problemPromptInput').focus();
+        }
+
+        function closeGenerateModal() {
+            const modal = document.getElementById('generateProblemModal');
+            const statusMessage = document.getElementById('generateStatus');
+            modal.style.display = 'none';
+            document.getElementById('problemPromptInput').value = '';
+            statusMessage.style.display = 'none';
+        }
+
+        async function generateProblem() {
+            const promptInput = document.getElementById('problemPromptInput');
+            const generateBtn = document.getElementById('generateBtn');
+            const statusMessage = document.getElementById('generateStatus');
+            const prompt = promptInput.value.trim();
+            
+            if (!prompt) {
+                showGenerateStatus('Please enter a prompt for the problem', 'error');
+                return;
+            }
+            
+            // Show loading state
+            generateBtn.disabled = true;
+            generateBtn.textContent = 'Generating...';
+            showGenerateStatus('Generating problem...', 'loading');
+            
+            try {
+                const response = await fetch('http://127.0.0.1:5000/generate-problem', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ prompt })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showGenerateStatus('Problem generated successfully!', 'success');
+                    // Reload the problems list
+                    loadProblems();
+                    // Close modal after a short delay
+                    setTimeout(() => {
+                        closeGenerateModal();
+                    }, 1500);
+                } else {
+                    showGenerateStatus('Error: ' + data.error, 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showGenerateStatus('Error generating problem. Please try again.', 'error');
+            } finally {
+                generateBtn.disabled = false;
+                generateBtn.textContent = 'Generate';
+            }
+        }
+
+        function showGenerateStatus(message, type) {
+            const statusMessage = document.getElementById('generateStatus');
+            statusMessage.textContent = message;
+            statusMessage.className = 'status-message ' + type;
+            statusMessage.style.display = 'block';
+        }
     </script>
 </body>
 </html>
