@@ -2060,3 +2060,338 @@ main {
 .run-code-btn:hover {
     background-color: var(--hover-bg);
 }
+
+/* Add these styles */
+.notes-container {
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.notes-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.new-note-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: var(--button-bg);
+    color: var(--button-text);
+    border: none;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.new-note-btn:hover {
+    background-color: var(--hover-bg);
+}
+
+.notes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.note-card {
+    background: var(--code-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1rem;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.note-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px var(--feature-shadow);
+}
+
+.note-title {
+    font-size: 1.1rem;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    color: var(--text-color);
+}
+
+.note-preview {
+    font-size: 0.9rem;
+    color: var(--secondary-text);
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.note-date {
+    font-size: 0.8rem;
+    color: var(--secondary-text);
+    margin-top: 1rem;
+}
+
+.note-title-input {
+    width: 100%;
+    padding: 0.8rem;
+    margin-bottom: 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background: var(--code-bg);
+    color: var(--text-color);
+    font-size: 1rem;
+}
+
+.note-content-input {
+    width: 100%;
+    min-height: 200px;
+    padding: 0.8rem;
+    margin-bottom: 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background: var(--code-bg);
+    color: var(--text-color);
+    font-size: 0.9rem;
+    resize: vertical;
+}
+
+.note-title-input:focus,
+.note-content-input:focus {
+    outline: none;
+}
+
+/* Update note styles */
+.note-editor {
+    height: calc(100vh - 64px);
+    background: var(--bg-color);
+    display: flex;
+    flex-direction: column;
+}
+
+.note-editor-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.back-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: none;
+    border: none;
+    color: var(--text-color);
+    cursor: pointer;
+    font-size: 0.9rem;
+    border-radius: 4px;
+}
+
+.back-btn:hover {
+    background: var(--hover-bg);
+}
+
+.note-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+.delete-note-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: #dc2626;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.save-note-btn {
+    padding: 0.5rem 1.5rem;
+    background: var(--button-bg);
+    color: var(--button-text);
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.note-editor-content {
+    flex: 1;
+    padding: 2rem;
+    max-width: 800px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.note-title-input {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    width: 100%;
+    padding: 0.5rem;
+    border: none;
+    background: none;
+    color: var(--text-color);
+}
+
+.note-content-input {
+    width: 100%;
+    height: calc(100vh - 250px);
+    padding: 0.5rem;
+    border: none;
+    background: none;
+    color: var(--text-color);
+    font-size: 1rem;
+    line-height: 1.6;
+    resize: none;
+}
+
+.note-title-input:focus,
+.note-content-input:focus {
+    outline: none;
+}
+
+/* Update note card styles */
+.note-card {
+    position: relative;
+}
+
+.note-card .delete-btn {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    opacity: 0;
+    transition: opacity 0.2s;
+    padding: 0.3rem;
+    background: none;
+    border: none;
+    color: var(--secondary-text);
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.note-card:hover .delete-btn {
+    opacity: 1;
+}
+
+.note-card .delete-btn:hover {
+    background: rgba(220, 38, 38, 0.1);
+    color: #dc2626;
+}
+
+/* Add these styles for the alert panel */
+.alert-panel {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 10000;
+    justify-content: center;
+    align-items: center;
+}
+
+.alert-content {
+    background: var(--bg-color);
+    padding: 1.5rem;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 4px 6px var(--feature-shadow);
+}
+
+.alert-message {
+    color: var(--text-color);
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.alert-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.alert-confirm, .alert-cancel {
+    padding: 0.5rem 1.5rem;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.alert-confirm {
+    background: var(--button-bg);
+    color: var(--button-text);
+    border: none;
+}
+
+.alert-cancel {
+    background: none;
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+}
+
+.alert-confirm:hover {
+    opacity: 0.9;
+}
+
+.alert-cancel:hover {
+    background: var(--hover-bg);
+}
+
+/* Add these styles */
+.loading-notes {
+    text-align: center;
+    padding: 2rem;
+    color: var(--secondary-text);
+    font-size: 0.9rem;
+}
+
+.empty-notes {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--secondary-text);
+}
+
+.empty-notes p {
+    font-size: 1.1rem;
+    margin: 0;
+}
+
+.error-loading-notes {
+    text-align: center;
+    padding: 2rem;
+}
+
+.error-loading-notes p {
+    color: #dc2626;
+    margin-bottom: 1rem;
+}
+
+.retry-btn {
+    padding: 0.5rem 1rem;
+    background: var(--button-bg);
+    color: var(--button-text);
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.3s;
+}
+
+.retry-btn:hover {
+    background-color: var(--hover-bg);
+}

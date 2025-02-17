@@ -3,15 +3,15 @@ from flask_cors import CORS
 from langchain_google_genai import ChatGoogleGenerativeAI
 from manim import *
 import os
-from dotenv import load_dotenv
 import logging
 import tempfile
 import subprocess
-import json
+from dotenv import load_dotenv
 from pathlib import Path
 import re
 import shutil
 import time
+from datetime import datetime
 
 
 # Setup Manim
@@ -53,6 +53,7 @@ logger = logging.getLogger(__name__)
 
 load_dotenv()
 google_api_key = os.getenv("GOOGLE_API_KEY")
+
 
 class EquationSolving(Scene):
     def __init__(self, equations, title_text, **kwargs):
@@ -680,6 +681,83 @@ def generate_problem():
 
     except Exception as e:
         logger.error(f"Error generating problem: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/notes', methods=['GET'])
+def get_notes():
+    try:
+        notes_dir = "notes"
+        if not os.path.exists(notes_dir):
+            os.makedirs(notes_dir)
+            
+        notes = []
+        for filename in os.listdir(notes_dir):
+            if filename.endswith(".txt"):
+                file_path = os.path.join(notes_dir, filename)
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    title = filename[:-4]  # Remove .txt extension
+                    content = f.read()
+                    # Get file creation time
+                    created_time = os.path.getctime(file_path)
+                    created_date = datetime.fromtimestamp(created_time).strftime('%Y-%m-%d %H:%M')
+                    
+                    notes.append({
+                        "title": title,
+                        "content": content,
+                        "date": created_date
+                    })
+                    
+        return jsonify(notes)
+    except Exception as e:
+        logger.error(f"Error getting notes: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/notes', methods=['POST'])
+def save_note():
+    try:
+        data = request.json
+        title = data.get('title', '').strip()
+        content = data.get('content', '').strip()
+        
+        if not title or not content:
+            return jsonify({"error": "Title and content are required"}), 400
+            
+        notes_dir = "notes"
+        if not os.path.exists(notes_dir):
+            os.makedirs(notes_dir)
+            
+        # Create filename from title (sanitize it)
+        filename = "".join(x for x in title if x.isalnum() or x in (' ', '-', '_'))
+        filename = f"{filename}.txt"
+        
+        file_path = os.path.join(notes_dir, filename)
+        with open(file_path, 'w', encoding='utf-8') as f:
+            f.write(content)
+            
+        return jsonify({"success": True, "message": "Note saved successfully"})
+    except Exception as e:
+        logger.error(f"Error saving note: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/notes/<title>', methods=['DELETE'])
+def delete_note(title):
+    try:
+        notes_dir = "notes"
+        filename = "".join(x for x in title if x.isalnum() or x in (' ', '-', '_'))
+        filename = f"{filename}.txt"
+        file_path = os.path.join(notes_dir, filename)
+        
+        if os.path.exists(file_path):
+            os.remove(file_path)
+            return jsonify({"success": True, "message": "Note deleted successfully"})
+        else:
+            return jsonify({"error": "Note not found"}), 404
+            
+    except Exception as e:
+        logger.error(f"Error deleting note: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
 
