@@ -54,7 +54,6 @@ logger = logging.getLogger(__name__)
 load_dotenv()
 google_api_key = os.getenv("GOOGLE_API_KEY")
 
-
 class EquationSolving(Scene):
     def __init__(self, equations, title_text, **kwargs):
         super().__init__(**kwargs)
