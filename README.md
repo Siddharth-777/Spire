@@ -11,7 +11,14 @@ Spire is an innovative AI-driven platform designed to revolutionize the way stud
 * Problem-Solving Section with AI-Generated Challenges 
 * Notion-Style Notes for Storing Text, Images, & Videos 
 * AI-Powered Image & Video Generation for Conceptual Learning
+  
 
+> :warning: **FINAL WEBSITE NOT DEPLOYED YET, BUT WORKS LOCALLY!**
+
+
+
+## Sample video
+https://github.com/user-attachments/assets/1e403ddd-9c27-4f7a-8a54-52a2bceb7384
 
 ## Getting Started
 
